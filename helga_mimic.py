@@ -36,7 +36,7 @@ def generate_sentence(channel_or_user):
         corpus += '\n'
 
     text_model = markovify.NewlineText(corpus, state_size=4)
-    return text_model.make_sentence(tries=getattr(setttings, 'MIMIC_TRIES', 50))
+    return text_model.make_sentence(tries=int(getattr(settings, 'MIMIC_TRIES', 50)))
 
 @command('mimic', help='mimics user or channel specified')
 def mimic(client, channel, nick, message, cmd, args):

@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.1.4] - 2016-11-19]
+### Changed
+- no argument suppplied means to mimic current channel
+- can specify multiple nicks
+
+## [0.1.3] - 2016-11-17
+### Figured Out
+- I suck at deploying
+
 ## [0.1.2] - 2016-11-17
 ### Added
 - setting to allow to change number of tries

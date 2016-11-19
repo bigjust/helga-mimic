@@ -1,24 +1,24 @@
 import unittest
 
-from helga_mimic import is_channel_or_user
+from helga_mimic import is_channel_or_nick
 
 
-class ChannelOrUserTestCase(unittest.TestCase):
+class ChannelOrNickTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
 
     def test_channel(self):
         """
-        is_channel_or_user returns `True` for channels
+        is_channel_or_nick returns `True` for channels
         """
 
-        self.assertTrue(is_channel_or_user('#test'))
-        self.assertTrue(is_channel_or_user('##test-ot'))
+        self.assertTrue(is_channel_or_nick('#test'))
+        self.assertTrue(is_channel_or_nick('##test-ot'))
 
-    def test_user(self):
+    def test_nick(self):
         """
-        is_channel_or_user returns `False` for users
+        is_channel_or_nick returns `False` for nicks
         """
 
-        self.assertFalse(is_channel_or_user('aineko'))
+        self.assertFalse(is_channel_or_nick('aineko'))

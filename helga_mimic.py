@@ -15,10 +15,7 @@ def is_channel_or_nick(channel_or_nick):
     Returns `True` if channel, `False` if nick.
     """
 
-    if len(channel_or_nick) == 1:
-        return channel_or_nick.startswith('#')
-
-    return False
+    return channel_or_nick.startswith('#')
 
 def generate_model(channel_or_nick):
     """

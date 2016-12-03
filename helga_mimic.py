@@ -1,9 +1,11 @@
 import markovify
+import time
 
 from helga import settings, log
 from helga.db import db
 from helga.plugins import command
 
+DEBUG = getattr(settings, 'HELGA_DEBUG', False)
 OPS = getattr(settings, 'OPERATORS', [])
 STATE_SIZE = int(getattr(settings, 'MIMIC_STATE_SIZE', 2))
 GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
@@ -67,9 +69,14 @@ def mimic(client, channel, nick, message, cmd, args):
     else:
         channel_or_nicks = args
 
+    start = time.time()
     generated = generate_sentence(channel_or_nicks)
+    duration = time.time() - start
 
     if not generated:
         return 'i got nothing :/'
+
+    if DEBUG:
+        generated = "{} [{:.2f}s]".format(generated, duration)
 
     return generated

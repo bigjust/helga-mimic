@@ -3,14 +3,19 @@ import time
 
 from helga import settings, log
 from helga.db import db
-from helga.plugins import command
+from helga.plugins import command, match
+
+from cobe.brain import Brain
 
 DEBUG = getattr(settings, 'HELGA_DEBUG', False)
 OPS = getattr(settings, 'OPERATORS', [])
 STATE_SIZE = int(getattr(settings, 'MIMIC_STATE_SIZE', 2))
 GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
+NICK = getattr(settings, 'NICK')
 
 logger = log.getLogger(__name__)
+
+brain = Brain('aineko.ai')
 
 def is_channel_or_nick(channel_or_nick):
     """
@@ -61,13 +66,55 @@ def generate_sentence(channel_or_nicks):
         tries=GENERATE_TRIES
     )
 
-@command('mimic', help='mimics nick or channel specified')
-def mimic(client, channel, nick, message, cmd, args):
+def train_brain(channel, filename='helga.ai'):
 
-    if not args:
-        channel_or_nicks = [channel]
-    else:
-        channel_or_nicks = args
+    start = time.time()
+
+    brain = Brain(filename)
+
+    brain.start_batch_learning()
+
+    for line in db.logger.find({
+        'channel': channel,
+    }):
+        brain.learn(line['message'])
+
+    brain.stop_batch_learning()
+
+
+@match(r'aineko')
+@command('mimic', help='mimics nick or channel specified')
+def mimic(client, channel, nick, message, *args):
+
+    logger.debug('message: {}'.format(message))
+    logger.debug('args: {}'.format(args))
+    #logger.debug('cmd: {}'.format(cmd))
+
+    # match
+    if len(args) == 1:
+        #return 'matched! args={}'.format(args)
+        # Match - args[0] is return value of check(), re.findall
+        found_list = args[0]
+
+        brain = Brain('helga.ai')
+        reply = brain.reply(message)
+
+        return reply
+
+    #return 'command! args={}'.format(args)
+    # we've been asked to mimic someone
+
+    if len(args) > 1:
+        channel_or_nicks = args[1]
+
+        if not args[1]:
+            channel_or_nicks = [channel]
+
+    if 'build' in channel_or_nicks:
+        # retrain brain
+
+        train_brain(channel)
+        return 'Done.'
 
     start = time.time()
     generated = generate_sentence(channel_or_nicks)

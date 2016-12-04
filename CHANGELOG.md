@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.2.0] - 2016-12-04]
+### Added
+- added cobe module to make some conversation
+- added a temporary command ("!mimic build") to rebuild the brain
+
+## [0.1.5] - 2016-11-19]
+### Changed
+- cleaned up some logging
+- fixed some unit tests
 
 ## [0.1.4] - 2016-11-19]
 ### Changed

@@ -86,11 +86,7 @@ def train_brain(channel, filename='helga.ai'):
 @command('mimic', help='mimics nick or channel specified')
 def mimic(client, channel, nick, message, *args):
 
-    logger.debug('message: {}'.format(message))
-    logger.debug('args: {}'.format(args))
-    #logger.debug('cmd: {}'.format(cmd))
-
-    # match
+    # you talkin' to me?
     if len(args) == 1:
         #return 'matched! args={}'.format(args)
         # Match - args[0] is return value of check(), re.findall
@@ -101,9 +97,7 @@ def mimic(client, channel, nick, message, *args):
 
         return reply
 
-    #return 'command! args={}'.format(args)
-    # we've been asked to mimic someone
-
+    # mimic command
     if len(args) > 1:
         channel_or_nicks = args[1]
 

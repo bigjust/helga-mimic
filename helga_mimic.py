@@ -66,7 +66,7 @@ def generate_sentence(channel_or_nicks):
         tries=GENERATE_TRIES
     )
 
-def train_brain(channel, filename='helga.ai'):
+def train_brain(channel, filename='brain.ai'):
 
     start = time.time()
 

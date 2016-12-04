@@ -82,7 +82,7 @@ def train_brain(channel, filename='helga.ai'):
     brain.stop_batch_learning()
 
 
-@match(r'aineko')
+@match(r'{}'.format(NICK))
 @command('mimic', help='mimics nick or channel specified')
 def mimic(client, channel, nick, message, *args):
 

@@ -1,11 +1,13 @@
 import markovify
+import os
 import time
 
 from helga import settings, log
 from helga.db import db
-from helga.plugins import command, match
+from helga.plugins import command, match, ResponseNotReady
 
 from cobe.brain import Brain
+from twisted.internet import reactor
 
 DEBUG = getattr(settings, 'HELGA_DEBUG', False)
 OPS = getattr(settings, 'OPERATORS', [])
@@ -15,7 +17,6 @@ NICK = getattr(settings, 'NICK')
 
 logger = log.getLogger(__name__)
 
-brain = Brain('aineko.ai')
 
 def is_channel_or_nick(channel_or_nick):
     """
@@ -66,36 +67,40 @@ def generate_sentence(channel_or_nicks):
         tries=GENERATE_TRIES
     )
 
-def train_brain(channel, filename='brain.ai'):
+def train_brain(client, channel):
+
+    # replace the current brain
+    os.remove('brain.ai')
+    BRAIN = Brain('brain.ai')
 
     start = time.time()
 
-    brain = Brain(filename)
-
-    brain.start_batch_learning()
+    BRAIN.start_batch_learning()
 
     for line in db.logger.find({
         'channel': channel,
     }):
-        brain.learn(line['message'])
+        BRAIN.learn(line['message'])
 
-    brain.stop_batch_learning()
+    BRAIN.stop_batch_learning()
 
+    logger.debug('learned stuff. Took {:.2f}s'.format(
+        time.time() - start
+    ))
+
+    client.msg(channel, "I learned some stuff!")
 
 @match(r'{}'.format(NICK))
 @command('mimic', help='mimics nick or channel specified')
 def mimic(client, channel, nick, message, *args):
 
+    BRAIN = Brain('brain.ai')
+
     # you talkin' to me?
     if len(args) == 1:
-        #return 'matched! args={}'.format(args)
         # Match - args[0] is return value of check(), re.findall
         found_list = args[0]
-
-        brain = Brain('helga.ai')
-        reply = brain.reply(message)
-
-        return reply
+        return BRAIN.reply(message.replace('aineko',''))
 
     # mimic command
     if len(args) > 1:
@@ -105,10 +110,9 @@ def mimic(client, channel, nick, message, *args):
             channel_or_nicks = [channel]
 
     if 'build' in channel_or_nicks:
-        # retrain brain
-
-        train_brain(channel)
-        return 'Done.'
+        # learn some shit
+        reactor.callLater(0, train_brain, client, channel)
+        raise ResponseNotReady
 
     start = time.time()
     generated = generate_sentence(channel_or_nicks)

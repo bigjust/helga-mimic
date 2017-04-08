@@ -90,17 +90,18 @@ def train_brain(client, channel):
 
     client.msg(channel, "I learned some stuff!")
 
+# API
+def bot_say(seed=''):
+    return Brain('brain.ai').reply(seed.replace(NICK,''))
+
 @match(r'{}'.format(NICK))
 @command('mimic', help='mimics nick or channel specified')
 def mimic(client, channel, nick, message, *args):
 
-    BRAIN = Brain('brain.ai')
-
     # you talkin' to me?
     if len(args) == 1:
         # Match - args[0] is return value of check(), re.findall
-        found_list = args[0]
-        return BRAIN.reply(message.replace('aineko',''))
+        return bot_say(seed=message)
 
     # mimic command
     if len(args) > 1:

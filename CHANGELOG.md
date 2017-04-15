@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.2.2] - 2017-04-15]
+### Added
+- support for ignore list setting
+- post processing of cobe generated replies
+### Changed
+- use cobe for channel-wide mimic, much faster
+
 ## [0.2.1] - 2017-04-08]
 ### Added
 - added a method for other plugins to use helga-mimic to generate replies

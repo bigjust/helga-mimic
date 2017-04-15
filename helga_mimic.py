@@ -106,7 +106,7 @@ def train_brain(client, channel):
     client.msg(channel, "I learned some stuff!")
 
 # API
-def bot_say(seed=''):
+def bot_say(seed='', think_time=500):
     """
 
     Generate response from cobe, seeding with the message.
@@ -123,7 +123,10 @@ def bot_say(seed=''):
     3. TODO
     """
 
-    response = Brain('brain.ai').reply(seed.replace(NICK,''))
+    response = Brain('brain.ai').reply(
+        seed.replace(NICK,''),
+        loop_ms=think_time,
+    )
 
     balance_chars = ['"', '\'']
     remove_chars = ['[', ']', '{', '}', '(', ')']
@@ -151,7 +154,7 @@ def mimic(client, channel, nick, message, *args):
         channel_or_nicks = args[1]
 
         if not args[1]:
-            return bot_say()
+            return bot_say(think_time=5000)
 
     if 'build' in channel_or_nicks:
         # learn some shit

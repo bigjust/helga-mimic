@@ -151,7 +151,7 @@ def mimic(client, channel, nick, message, *args):
         channel_or_nicks = args[1]
 
         if not args[1]:
-            channel_or_nicks = [channel]
+            return bot_say()
 
     if 'build' in channel_or_nicks:
         # learn some shit

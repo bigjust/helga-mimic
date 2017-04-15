@@ -15,6 +15,8 @@ STATE_SIZE = int(getattr(settings, 'MIMIC_STATE_SIZE', 2))
 GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
 NICK = getattr(settings, 'NICK')
 
+IGNORED = getattr(settings, 'IGNORED', [])
+
 logger = log.getLogger(__name__)
 
 
@@ -32,7 +34,9 @@ def generate_model(channel_or_nick):
 
     logger.debug('generating model for {}'.format(channel_or_nick))
 
-    db_filter = {}
+    db_filter = {
+        'nick': {'$nin': IGNORED},
+    }
 
     if is_channel_or_nick(channel_or_nick):
         db_filter = {'channel': channel_or_nick}
@@ -69,9 +73,19 @@ def generate_sentence(channel_or_nicks):
 
 def train_brain(client, channel):
 
+    logger.debug('starting training')
+
+    logger.debug('ignored: {}'.format(IGNORED))
+
     # replace the current brain
-    os.remove('brain.ai')
+    try:
+        os.remove('brain.ai')
+    except:
+        pass
+
     BRAIN = Brain('brain.ai')
+
+    logger.debug('created brain.ai')
 
     start = time.time()
 
@@ -79,6 +93,7 @@ def train_brain(client, channel):
 
     for line in db.logger.find({
         'channel': channel,
+        'nick': {'$nin': IGNORED},
     }):
         BRAIN.learn(line['message'])
 

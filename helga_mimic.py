@@ -107,7 +107,35 @@ def train_brain(client, channel):
 
 # API
 def bot_say(seed=''):
-    return Brain('brain.ai').reply(seed.replace(NICK,''))
+    """
+
+    Generate response from cobe, seeding with the message.
+
+    The we do some processing on the out, like removing nicks (both
+    active and known), or replacing nick mentions with OP or preset
+    list.
+
+    1. remove nicks (both active and known), replace with either OP or
+    something from a preset list TODO
+
+    2. remove odd number quotes (the first)
+
+    3. TODO
+    """
+
+    response = Brain('brain.ai').reply(seed.replace(NICK,''))
+
+    balance_chars = ['"', '\'']
+    remove_chars = ['[', ']', '{', '}', '(', ')']
+
+    for char in remove_chars:
+        response = response.replace(char, '')
+
+    for char in balance_chars:
+        if response.count(char) % 2:
+            response = response.replace(char, '', 1)
+
+    return response
 
 @match(r'{}'.format(NICK))
 @command('mimic', help='mimics nick or channel specified')

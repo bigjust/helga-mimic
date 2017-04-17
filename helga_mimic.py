@@ -6,6 +6,8 @@ from helga import settings, log
 from helga.db import db
 from helga.plugins import command, match, ResponseNotReady
 
+from helga_alias import find_aliases
+
 from cobe.brain import Brain
 from twisted.internet import reactor
 
@@ -65,7 +67,11 @@ def generate_sentence(channel_or_nicks):
     models = []
 
     for channel_or_nick in channel_or_nicks:
-        models.append(generate_model(channel_or_nick))
+        if is_channel_or_nick(channel_or_nick):
+            models.append(generate_model(channel_or_nick))
+        else:
+            for alias in find_aliases(channel_or_nick):
+                models.append(generate_model(alias))
 
     return markovify.combine(models).make_sentence(
         tries=GENERATE_TRIES

@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.2.2'
+version = '0.3.0'
 
 setup(
     name="helga-mimic",
@@ -22,6 +22,7 @@ setup(
     install_requires = (
         'markovify==0.4.3',
         'cobe==2.1.2',
+        'helga-alias==0.1.0',
     ),
     include_package_data=True,
     py_modules=['helga_mimic'],

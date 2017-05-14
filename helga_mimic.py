@@ -162,6 +162,10 @@ def mimic(client, channel, nick, message, *args):
         if not args[1]:
             return bot_say(think_time=5000)
 
+    if 'build' in channel_or_nicks:
+        reactor.callLater(0, train_brain, client, channel)
+        raise ResponseNotReady
+
     start = time.time()
     generated = generate_sentence(channel_or_nicks)
     duration = time.time() - start

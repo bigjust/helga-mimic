@@ -20,9 +20,10 @@ setup(
     license='LICENSE',
     packages=find_packages(),
     install_requires = (
-        'markovify==0.4.3',
         'cobe==2.1.2',
+        'helga-oral-history==0.1.1',
         'helga-alias==0.1.0',
+        'markovify==0.4.3',
     ),
     include_package_data=True,
     py_modules=['helga_mimic'],

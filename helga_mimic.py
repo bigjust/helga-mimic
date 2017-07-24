@@ -22,20 +22,6 @@ IGNORED = getattr(settings, 'IGNORED', [])
 logger = log.getLogger(__name__)
 
 
-def should_process(message):
-    """
-    Returns `True` if the message should be added to user or general corpus
-
-    Exclusions:
-
-    1. Stuff that starts with [,.!] as those are most likely bot commands
-    """
-
-    if message[0] in ['.', ',', '!']:
-        return False
-
-    return True
-
 def is_channel_or_nick(channel_or_nick):
     """
     Returns `True` if channel, `False` if nick.
@@ -52,6 +38,7 @@ def generate_model(channel_or_nick):
 
     db_filter = {
         'nick': {'$nin': IGNORED},
+        'message': {'$regex': '^(?!\.|\,|\!)'},
     }
 
     if is_channel_or_nick(channel_or_nick):
@@ -64,16 +51,14 @@ def generate_model(channel_or_nick):
 
     corpus = ''
     for doc in db.logger.find(db_filter):
-        if should_process(doc['message']):
-            corpus += doc['message']
-            corpus += '\n'
+        corpus += doc['message']
+        corpus += '\n'
 
     return markovify.NewlineText(corpus, state_size=STATE_SIZE)
 
 def generate_sentence(channel_or_nicks):
     """
     Generates a sentence from the corpus of `channel_or_nick`
-
     """
 
     logger.debug('generating sentence for {}'.format(channel_or_nicks))
@@ -111,12 +96,16 @@ def train_brain(client, channel):
 
     BRAIN.start_batch_learning()
 
-    for line in db.logger.find({
+    logger_lines = db.logger.find({
         'channel': channel,
         'nick': {'$nin': IGNORED},
-    }):
-        if should_process(line):
-            BRAIN.learn(line['message'])
+        'message': {'$regex': '^(?!\.|\,|\!)'},
+    })
+
+    logger.debug('log total: {}'.format(logger_lines.count()))
+
+    for line in logger_lines:
+        BRAIN.learn(line['message'])
 
     BRAIN.stop_batch_learning()
 

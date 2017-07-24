@@ -78,7 +78,6 @@ def generate_sentence(channel_or_nicks):
 def train_brain(client, channel):
 
     logger.debug('starting training')
-
     logger.debug('ignored: {}'.format(IGNORED))
 
     # replace the current brain

@@ -46,7 +46,6 @@ def generate_model(channel_or_nick):
     else:
         db_filter = {'nick': channel_or_nick}
 
-    logger.debug('db_filter: {}'.format(db_filter))
     logger.debug('{} lines found'.format(db.logger.find(db_filter).count()))
 
     corpus = ''
@@ -163,21 +162,18 @@ def mimic(client, channel, nick, message, *args):
     if len(args) > 1:
         channel_or_nicks = args[1]
 
-        if not args[1]:
-            return bot_say(think_time=5000)
+        if 'build' in channel_or_nicks:
+            reactor.callLater(0, train_brain, client, channel)
+            raise ResponseNotReady
 
-    if 'build' in channel_or_nicks:
-        reactor.callLater(0, train_brain, client, channel)
-        raise ResponseNotReady
+        start = time.time()
+        generated = generate_sentence(channel_or_nicks)
+        duration = time.time() - start
 
-    start = time.time()
-    generated = generate_sentence(channel_or_nicks)
-    duration = time.time() - start
+        if not generated:
+            return 'i got nothing :/'
 
-    if not generated:
-        return 'i got nothing :/'
+        if DEBUG:
+            generated = "{} [{:.2f}s]".format(generated, duration)
 
-    if DEBUG:
-        generated = "{} [{:.2f}s]".format(generated, duration)
-
-    return generated
+        return generated

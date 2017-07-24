@@ -21,8 +21,8 @@ setup(
     packages=find_packages(),
     install_requires = (
         'cobe==2.1.2',
-        'helga-oral-history==0.1.1',
-        'helga-alias==0.1.0',
+        'helga-oral-history',
+        'helga-alias',
         'markovify==0.4.3',
     ),
     include_package_data=True,

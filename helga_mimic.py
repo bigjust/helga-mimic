@@ -78,16 +78,15 @@ def generate_sentence(channel_or_nicks):
     for model in db.mimic.find(db_filter):
 
         models.append(
-            markovify.Text.from_json(model['model'])
+            markovify.NewlineText.from_json(model['model'])
         )
 
-    if not models:
-        for channel_or_nick in channel_or_nicks:
-            if is_channel_or_nick(channel_or_nick):
-                models.append(generate_model(channel_or_nick))
-            else:
-                for alias in find_aliases(channel_or_nick):
-                    models.append(generate_model(alias))
+    for channel_or_nick in channel_or_nicks:
+        if is_channel_or_nick(channel_or_nick):
+            models.append(generate_model(channel_or_nick))
+        else:
+            for alias in find_aliases(channel_or_nick):
+                models.append(generate_model(alias))
 
     return markovify.combine(models).make_sentence(
         tries=GENERATE_TRIES

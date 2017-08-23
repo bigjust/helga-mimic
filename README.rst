@@ -36,6 +36,13 @@ currently)::
   <bigjust> !mimic build
   <helga> I learned some stuff!
 
+ teach helga a new personality::
+
+   <bigjust> !mimic load <key> <url>
+   <helga> <key> is now a thing!
+   <bigjust> !mimic <key>
+   <helga> wuba dub dub!
+
 License
 -------
 

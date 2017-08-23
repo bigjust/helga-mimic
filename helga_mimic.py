@@ -1,5 +1,6 @@
 import markovify
 import os
+import requests
 import time
 
 from helga import settings, log
@@ -17,6 +18,7 @@ STATE_SIZE = int(getattr(settings, 'MIMIC_STATE_SIZE', 2))
 GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
 THINK_TIME = int(getattr(settings, 'MIMIC_THINK_TIME', 2000))
 NICK = getattr(settings, 'NICK')
+MODELS = {}
 
 IGNORED = getattr(settings, 'IGNORED', [])
 
@@ -60,6 +62,9 @@ def generate_sentence(channel_or_nicks):
     """
     Generates a sentence from the corpus of `channel_or_nick`
     """
+
+    if MODELS.has_key(channel_or_nicks[0]):
+        return MODELS[channel_or_nicks[0]].make_sentence()
 
     logger.debug('generating sentence for {}'.format(channel_or_nicks))
 
@@ -153,6 +158,8 @@ def bot_say(seed='', think_time=THINK_TIME):
 @command('mimic', help='mimics nick or channel specified')
 def mimic(client, channel, nick, message, *args):
 
+    logger.debug('args: {}'.format(args))
+
     # you talkin' to me?
     if len(args) == 1:
         # Match - args[0] is return value of check(), re.findall
@@ -165,6 +172,19 @@ def mimic(client, channel, nick, message, *args):
         if 'build' in channel_or_nicks:
             reactor.callLater(0, train_brain, client, channel)
             raise ResponseNotReady
+
+        if 'load' in channel_or_nicks:
+
+            cmd_args = channel_or_nicks
+            if len(cmd_args) < 3:
+                return 'usage: !mimic load <key> <url>'
+
+            key = cmd_args[1]
+            resp = requests.get(cmd_args[2])
+
+            for line in resp.content.splitlines():
+                MODELS[key] = markovify.NewlineText(resp.content, state_size=STATE_SIZE)
+                return '{} loaded.'.format(key)
 
         start = time.time()
         generated = generate_sentence(channel_or_nicks)

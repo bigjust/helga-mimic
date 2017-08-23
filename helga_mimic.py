@@ -63,19 +63,31 @@ def generate_sentence(channel_or_nicks):
     Generates a sentence from the corpus of `channel_or_nick`
     """
 
-    if MODELS.has_key(channel_or_nicks[0]):
-        return MODELS[channel_or_nicks[0]].make_sentence()
-
     logger.debug('generating sentence for {}'.format(channel_or_nicks))
 
     models = []
+    nicks = [str(nick) for nick in channel_or_nicks]
 
-    for channel_or_nick in channel_or_nicks:
-        if is_channel_or_nick(channel_or_nick):
-            models.append(generate_model(channel_or_nick))
-        else:
-            for alias in find_aliases(channel_or_nick):
-                models.append(generate_model(alias))
+    db_filter = {
+        'key': {
+            '$in': nicks,
+        }}
+
+    logger.debug('db filter: {}'.format(db_filter))
+
+    for model in db.mimic.find(db_filter):
+
+        models.append(
+            markovify.Text.from_json(model['model'])
+        )
+
+    if not models:
+        for channel_or_nick in channel_or_nicks:
+            if is_channel_or_nick(channel_or_nick):
+                models.append(generate_model(channel_or_nick))
+            else:
+                for alias in find_aliases(channel_or_nick):
+                    models.append(generate_model(alias))
 
     return markovify.combine(models).make_sentence(
         tries=GENERATE_TRIES
@@ -179,11 +191,26 @@ def mimic(client, channel, nick, message, *args):
             if len(cmd_args) < 3:
                 return 'usage: !mimic load <key> <url>'
 
-            key = cmd_args[1]
+            key = str(cmd_args[1])
             resp = requests.get(cmd_args[2])
 
             for line in resp.content.splitlines():
-                MODELS[key] = markovify.NewlineText(resp.content, state_size=STATE_SIZE)
+
+                markov_model = markovify.NewlineText(
+                    resp.content,
+                    state_size=STATE_SIZE
+                )
+
+                result = db.mimic.replace_one(
+                    {
+                        'key': key,
+                    },{
+                        'key': key,
+                        'model': markov_model.to_json(),
+                    },
+                    True
+                )
+
                 return '{} loaded.'.format(key)
 
         start = time.time()

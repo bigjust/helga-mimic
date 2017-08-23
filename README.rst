@@ -36,7 +36,7 @@ currently)::
   <bigjust> !mimic build
   <helga> I learned some stuff!
 
- teach helga a new personality::
+teach helga a new personality::
 
    <bigjust> !mimic load <key> <url>
    <helga> <key> loaded.

@@ -39,7 +39,7 @@ currently)::
  teach helga a new personality::
 
    <bigjust> !mimic load <key> <url>
-   <helga> <key> is now a thing!
+   <helga> <key> loaded.
    <bigjust> !mimic <key>
    <helga> wuba dub dub!
 

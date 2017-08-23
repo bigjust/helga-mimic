@@ -77,9 +77,13 @@ def generate_sentence(channel_or_nicks):
 
     for model in db.mimic.find(db_filter):
 
+        logger.debug('reconstituting model for {}'.format(model['key']))
+
         models.append(
             markovify.NewlineText.from_json(model['model'])
         )
+
+        channel_or_nicks.pop(channel_or_nicks.index(model['key']))
 
     for channel_or_nick in channel_or_nicks:
         if is_channel_or_nick(channel_or_nick):

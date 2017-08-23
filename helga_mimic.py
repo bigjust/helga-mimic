@@ -221,6 +221,6 @@ def mimic(client, channel, nick, message, *args):
             return 'i got nothing :/'
 
         if DEBUG:
-            generated = "{} [{:.2f}s]".format(generated, duration)
+            generated = u"{} [{:.2f}s]".format(generated, duration)
 
         return generated

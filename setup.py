@@ -23,7 +23,7 @@ setup(
         'cobe==2.1.2',
         'helga-oral-history',
         'helga-alias',
-        'markovify==0.4.3',
+        'markovify==0.6.0',
     ),
     include_package_data=True,
     py_modules=['helga_mimic'],

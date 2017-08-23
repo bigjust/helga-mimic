@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.0] - 2017-08-23]
+### Added
+- subcommand for loading external corpora
+- setting for cobe reply time
+### Changed
+- improved corpus filter
+
 ## [0.3.1] - 2017-05-14]
 ### Added
 - added a function for filtering messages into the markov chains

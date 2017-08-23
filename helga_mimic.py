@@ -15,6 +15,7 @@ DEBUG = getattr(settings, 'HELGA_DEBUG', False)
 OPS = getattr(settings, 'OPERATORS', [])
 STATE_SIZE = int(getattr(settings, 'MIMIC_STATE_SIZE', 2))
 GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
+THINK_TIME = int(getattr(settings, 'MIMIC_THINK_TIME', 2000))
 NICK = getattr(settings, 'NICK')
 
 IGNORED = getattr(settings, 'IGNORED', [])
@@ -114,7 +115,7 @@ def train_brain(client, channel):
     client.msg(channel, "I learned some stuff!")
 
 # API
-def bot_say(seed='', think_time=500):
+def bot_say(seed='', think_time=THINK_TIME):
     """
 
     Generate response from cobe, seeding with the message.

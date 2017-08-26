@@ -13,14 +13,12 @@ from cobe.brain import Brain
 from twisted.internet import reactor
 
 DEBUG = getattr(settings, 'HELGA_DEBUG', False)
+GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
+IGNORED = getattr(settings, 'IGNORED', [])
+NICK = getattr(settings, 'NICK')
 OPS = getattr(settings, 'OPERATORS', [])
 STATE_SIZE = int(getattr(settings, 'MIMIC_STATE_SIZE', 2))
-GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
 THINK_TIME = int(getattr(settings, 'MIMIC_THINK_TIME', 2000))
-NICK = getattr(settings, 'NICK')
-MODELS = {}
-
-IGNORED = getattr(settings, 'IGNORED', [])
 
 logger = log.getLogger(__name__)
 

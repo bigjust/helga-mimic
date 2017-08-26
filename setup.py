@@ -24,6 +24,7 @@ setup(
         'helga-oral-history',
         'helga-alias',
         'markovify==0.6.0',
+        'requests',
     ),
     include_package_data=True,
     py_modules=['helga_mimic'],

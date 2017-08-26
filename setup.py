@@ -30,7 +30,7 @@ setup(
     zip_safe=True,
     entry_points = dict(
         helga_plugins = [
-            'mimic = helga_mimic:mimic',
+            'mimic = helga_mimic:MimicPlugin',
         ],
     ),
 )

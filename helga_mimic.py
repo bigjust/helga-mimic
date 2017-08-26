@@ -5,7 +5,7 @@ import time
 
 from helga import settings, log
 from helga.db import db
-from helga.plugins import command, match, ResponseNotReady
+from helga.plugins import Command, ResponseNotReady
 
 from helga_alias import find_aliases
 
@@ -169,20 +169,26 @@ def bot_say(seed='', think_time=THINK_TIME):
 
     return response
 
-@match(r'{}'.format(NICK))
-@command('mimic', help='mimics nick or channel specified')
-def mimic(client, channel, nick, message, *args):
 
-    logger.debug('args: {}'.format(args))
+class MimicPlugin(Command):
 
-    # you talkin' to me?
-    if len(args) == 1:
-        # Match - args[0] is return value of check(), re.findall
-        return bot_say(seed=message)
+    command = 'mimic'
 
-    # mimic command
-    if len(args) > 1:
-        channel_or_nicks = args[1]
+    def preprocess(self, client, channel, nick, message):
+        if NICK in message:
+            client.msg(channel, bot_say(seed=message))
+
+        return channel, nick, message
+
+    def run(self, client, channel, nick, message, cmd, args):
+
+        logger.debug('args: {}'.format(args))
+        logger.debug('cmd: {}'.format(cmd))
+
+        if not args:
+            args = [channel]
+
+        channel_or_nicks = args
 
         if 'build' in channel_or_nicks:
             reactor.callLater(0, train_brain, client, channel)
@@ -190,12 +196,11 @@ def mimic(client, channel, nick, message, *args):
 
         if 'load' in channel_or_nicks:
 
-            cmd_args = channel_or_nicks
-            if len(cmd_args) < 3:
+            if len(args) < 3:
                 return 'usage: !mimic load <key> <url>'
 
-            key = str(cmd_args[1])
-            resp = requests.get(cmd_args[2])
+            key = str(args[1])
+            resp = requests.get(args[2])
 
             for line in resp.content.splitlines():
 
@@ -204,14 +209,13 @@ def mimic(client, channel, nick, message, *args):
                     state_size=STATE_SIZE
                 )
 
-                result = db.mimic.replace_one(
-                    {
-                        'key': key,
-                    },{
-                        'key': key,
-                        'model': markov_model.to_json(),
-                    },
-                    True
+                db.mimic.replace_one({
+                    'key': key,
+                },{
+                    'key': key,
+                    'model': markov_model.to_json(),
+                },
+                True
                 )
 
                 return '{} loaded.'.format(key)

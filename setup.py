@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.4.0'
+version = '0.4.1'
 
 setup(
     name="helga-mimic",
@@ -21,8 +21,9 @@ setup(
     packages=find_packages(),
     install_requires = (
         'cobe==2.1.2',
-        'helga-oral-history',
         'helga-alias',
+        'helga-oral-history',
+        'helga-twitter',
         'markovify==0.6.0',
         'requests',
     ),

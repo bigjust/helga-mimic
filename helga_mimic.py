@@ -8,6 +8,7 @@ from helga.db import db
 from helga.plugins import Command, ResponseNotReady
 
 from helga_alias import find_aliases
+from helga_twitter import tweet
 
 from cobe.brain import Brain
 from twisted.internet import reactor
@@ -172,9 +173,14 @@ class MimicPlugin(Command):
 
     command = 'mimic'
 
+    last_response = ''
+
     def preprocess(self, client, channel, nick, message):
         if NICK in message:
-            client.msg(channel, bot_say(seed=message))
+            response = bot_say(seed=message)
+            client.msg(channel, response)
+
+            self.last_response = response
 
         return channel, nick, message
 
@@ -187,6 +193,11 @@ class MimicPlugin(Command):
             args = [channel]
 
         channel_or_nicks = args
+
+        if 'tweet' in channel_or_nicks:
+            logger.debug(u'sending tweet: {}'.format(self.last_response))
+            reactor.callLater(0, tweet, client, channel, self.last_response)
+            raise ResponseNotReady
 
         if 'build' in channel_or_nicks:
             reactor.callLater(0, train_brain, client, channel)
@@ -218,12 +229,15 @@ class MimicPlugin(Command):
 
                 return '{} loaded.'.format(key)
 
+
         start = time.time()
         generated = generate_sentence(channel_or_nicks)
         duration = time.time() - start
 
         if not generated:
             return 'i got nothing :/'
+
+        self.last_response = generated
 
         if DEBUG:
             generated = u"{} [{:.2f}s]".format(generated, duration)

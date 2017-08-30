@@ -1,5 +1,6 @@
 import markovify
 import os
+import os.path
 import requests
 import time
 
@@ -55,7 +56,22 @@ def generate_model(channel_or_nick):
         corpus += doc['message']
         corpus += '\n'
 
-    return markovify.NewlineText(corpus, state_size=STATE_SIZE)
+    markov_chain = markovify.NewlineText(corpus, state_size=STATE_SIZE)
+
+    with open('{}.markov'.format(channel_or_nick), 'w') as f:
+        f.write(markov_chain.to_json())
+
+    logger.debug('done creating markov file.')
+
+def generate_models(client, channel, channel_or_nicks):
+    """
+    Create markov files for each nick specified, or the channel.
+    """
+
+    for channel_or_nick in channel_or_nicks:
+        generate_model(channel_or_nick)
+
+    client.msg(channel, 'build done!')
 
 def generate_sentence(channel_or_nicks):
     """
@@ -65,31 +81,12 @@ def generate_sentence(channel_or_nicks):
     logger.debug('generating sentence for {}'.format(channel_or_nicks))
 
     models = []
-    nicks = [str(nick) for nick in channel_or_nicks]
 
-    db_filter = {
-        'key': {
-            '$in': nicks,
-        }}
-
-    logger.debug('db filter: {}'.format(db_filter))
-
-    for model in db.mimic.find(db_filter):
-
-        logger.debug('reconstituting model for {}'.format(model['key']))
-
-        models.append(
-            markovify.NewlineText.from_json(model['model'])
-        )
-
-        channel_or_nicks.pop(channel_or_nicks.index(model['key']))
-
-    for channel_or_nick in channel_or_nicks:
-        if is_channel_or_nick(channel_or_nick):
-            models.append(generate_model(channel_or_nick))
-        else:
-            for alias in find_aliases(channel_or_nick):
-                models.append(generate_model(alias))
+    for nick in channel_or_nicks:
+        filename = '{}.markov'.format(nick)
+        if os.path.exists(filename):
+            with open(filename, 'r') as f:
+                models.append(markovify.NewlineText.from_json(f.read()))
 
     return markovify.combine(models).make_sentence(
         tries=GENERATE_TRIES
@@ -172,7 +169,6 @@ def bot_say(seed='', think_time=THINK_TIME):
 class MimicPlugin(Command):
 
     command = 'mimic'
-
     last_response = ''
 
     def preprocess(self, client, channel, nick, message):
@@ -200,7 +196,7 @@ class MimicPlugin(Command):
             raise ResponseNotReady
 
         if 'build' in channel_or_nicks:
-            reactor.callLater(0, train_brain, client, channel)
+            reactor.callLater(0, generate_models, client, channel, channel_or_nicks[1:])
             raise ResponseNotReady
 
         if 'load' in channel_or_nicks:
@@ -218,17 +214,10 @@ class MimicPlugin(Command):
                     state_size=STATE_SIZE
                 )
 
-                db.mimic.replace_one({
-                    'key': key,
-                },{
-                    'key': key,
-                    'model': markov_model.to_json(),
-                },
-                True
-                )
+                with open('{}.markov'.format(key), 'w') as f:
+                    f.write(markov_model.to_json())
 
                 return '{} loaded.'.format(key)
-
 
         start = time.time()
         generated = generate_sentence(channel_or_nicks)

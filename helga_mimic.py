@@ -58,7 +58,7 @@ def generate_model(channel_or_nick):
 
     markov_chain = markovify.NewlineText(corpus, state_size=STATE_SIZE)
 
-    with open('{}.markov'.format(channel_or_nick), 'w') as f:
+    with open('markov-{}.json'.format(channel_or_nick), 'w') as f:
         f.write(markov_chain.to_json())
 
     logger.debug('done creating markov file.')
@@ -67,6 +67,26 @@ def generate_models(client, channel, channel_or_nicks):
     """
     Create markov files for each nick specified, or the channel.
     """
+
+    if not channel_or_nicks:
+        # build models for every nick
+
+        logger.debug('building all nicks')
+
+        nicks_pipeline = [
+            {'$match': {
+                'channel': channel,
+            }},
+            {'$group': {'_id': '$nick'}},
+        ]
+
+        results = [nick for nick in db.logger.aggregate(nicks_pipeline)]
+
+        logger.debug('results = {}'.format(results))
+
+        channel_or_nicks = [nick['_id'] for nick in results]
+
+        logger.debug('nicks from db.logger: {}'.format(channel_or_nicks))
 
     for channel_or_nick in channel_or_nicks:
         generate_model(channel_or_nick)
@@ -83,7 +103,7 @@ def generate_sentence(channel_or_nicks):
     models = []
 
     for nick in channel_or_nicks:
-        filename = '{}.markov'.format(nick)
+        filename = 'markov-{}.json'.format(nick)
         if os.path.exists(filename):
             with open(filename, 'r') as f:
                 models.append(markovify.NewlineText.from_json(f.read()))

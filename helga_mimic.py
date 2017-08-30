@@ -81,12 +81,9 @@ def generate_models(client, channel, channel_or_nicks):
         ]
 
         results = [nick for nick in db.logger.aggregate(nicks_pipeline)]
-
-        logger.debug('results = {}'.format(results))
-
         channel_or_nicks = [nick['_id'] for nick in results]
 
-        logger.debug('nicks from db.logger: {}'.format(channel_or_nicks))
+        channel_or_nicks.append(channel)
 
     for channel_or_nick in channel_or_nicks:
         generate_model(channel_or_nick)

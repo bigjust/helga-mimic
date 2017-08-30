@@ -231,7 +231,7 @@ class MimicPlugin(Command):
                     state_size=STATE_SIZE
                 )
 
-                with open('{}.markov'.format(key), 'w') as f:
+                with open('markov-{}.json'.format(key), 'w') as f:
                     f.write(markov_model.to_json())
 
                 return '{} loaded.'.format(key)

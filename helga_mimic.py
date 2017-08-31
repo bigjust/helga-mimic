@@ -32,7 +32,7 @@ def is_channel_or_nick(channel_or_nick):
 
     return channel_or_nick.startswith('#')
 
-def generate_model(channel_or_nick):
+def generate_model(channel_or_nick, corpus=''):
     """
     Generates a markov chain for channel or nick
     """
@@ -51,10 +51,11 @@ def generate_model(channel_or_nick):
 
     logger.debug('{} lines found'.format(db.logger.find(db_filter).count()))
 
-    corpus = ''
-    for doc in db.logger.find(db_filter):
-        corpus += doc['message']
-        corpus += '\n'
+
+    if not corpus:
+        for doc in db.logger.find(db_filter):
+            corpus += doc['message']
+            corpus += '\n'
 
     markov_chain = markovify.NewlineText(corpus, state_size=STATE_SIZE)
 
@@ -224,17 +225,7 @@ class MimicPlugin(Command):
             key = str(args[1])
             resp = requests.get(args[2])
 
-            for line in resp.content.splitlines():
-
-                markov_model = markovify.NewlineText(
-                    resp.content,
-                    state_size=STATE_SIZE
-                )
-
-                with open('markov-{}.json'.format(key), 'w') as f:
-                    f.write(markov_model.to_json())
-
-                return '{} loaded.'.format(key)
+            generate_model(key, corpus=resp.content)
 
         start = time.time()
         generated = generate_sentence(channel_or_nicks)

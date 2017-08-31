@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.4.3] - 2017-08-30]
 ### Fixed
 - fixed filename for externally loaded models
+- use seperate thread for markov models
+- fix regression in 'no models found' handling
+- fix regression in regex handling message exclusions being ignored
+- DRY markov file generation
 
 ## [0.4.2] - 2017-08-30]
 ### Changed

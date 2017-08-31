@@ -12,7 +12,7 @@ from helga_alias import find_aliases
 from helga_twitter import tweet
 
 from cobe.brain import Brain
-from twisted.internet import reactor
+from twisted.internet import reactor, threads
 
 DEBUG = getattr(settings, 'HELGA_DEBUG', False)
 GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
@@ -217,7 +217,7 @@ class MimicPlugin(Command):
             raise ResponseNotReady
 
         if 'build' in channel_or_nicks:
-            reactor.callLater(0, generate_models, client, channel, channel_or_nicks[1:])
+            threads.deferToThread(generate_models, client, channel, channel_or_nicks[1:])
             raise ResponseNotReady
 
         if 'load' in channel_or_nicks:

@@ -106,6 +106,9 @@ def generate_sentence(channel_or_nicks):
             with open(filename, 'r') as f:
                 models.append(markovify.NewlineText.from_json(f.read()))
 
+    if not models:
+        return
+
     return markovify.combine(models).make_sentence(
         tries=GENERATE_TRIES
     )

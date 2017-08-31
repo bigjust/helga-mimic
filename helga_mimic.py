@@ -45,9 +45,9 @@ def generate_model(channel_or_nick, corpus=''):
     }
 
     if is_channel_or_nick(channel_or_nick):
-        db_filter = {'channel': channel_or_nick}
+        db_filter['channel'] = channel_or_nick
     else:
-        db_filter = {'nick': channel_or_nick}
+        db_filter['nick'] = channel_or_nick
 
     logger.debug('{} lines found'.format(db.logger.find(db_filter).count()))
 

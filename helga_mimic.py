@@ -8,7 +8,7 @@ from helga import settings, log
 from helga.db import db
 from helga.plugins import Command, ResponseNotReady
 
-from helga_alias import find_aliases
+from helga_alias import find_alias
 from helga_twitter import tweet
 
 from cobe.brain import Brain
@@ -101,10 +101,12 @@ def generate_sentence(channel_or_nicks):
     models = []
 
     for nick in channel_or_nicks:
-        filename = 'markov-{}.json'.format(nick)
-        if os.path.exists(filename):
-            with open(filename, 'r') as f:
-                models.append(markovify.NewlineText.from_json(f.read()))
+        _, aliases = find_alias(nick, create_new=False)
+        for alias in aliases:
+            filename = 'markov-{}.json'.format(alias)
+            if os.path.exists(filename):
+                with open(filename, 'r') as f:
+                    models.append(markovify.NewlineText.from_json(f.read()))
 
     if not models:
         return

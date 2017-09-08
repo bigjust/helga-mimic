@@ -48,7 +48,8 @@ def generate_model(channel_or_nick, corpus=''):
     }
 
     if is_channel_or_nick(channel_or_nick):
-        db_filter['channel'] = channel_or_nick
+        train_brain(channel_or_nick)
+        return
     else:
         db_filter['nick'] = channel_or_nick
 
@@ -73,7 +74,7 @@ def generate_models(client, channel, channel_or_nicks):
     """
 
     if not channel_or_nicks:
-        # build models for every nick
+        # build models for every nick, and cobe brain
 
         logger.debug('building all nicks')
 
@@ -118,7 +119,7 @@ def generate_sentence(channel_or_nicks):
         tries=GENERATE_TRIES
     )
 
-def train_brain(client, channel):
+def train_brain(channel):
 
     logger.debug('starting training')
     logger.debug('ignored: {}'.format(IGNORED))
@@ -153,8 +154,6 @@ def train_brain(client, channel):
     logger.debug('learned stuff. Took {:.2f}s'.format(
         time.time() - start
     ))
-
-    client.msg(channel, "I learned some stuff!")
 
 # API
 def bot_say(seed='', think_time=THINK_TIME):

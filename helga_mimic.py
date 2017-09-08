@@ -1,6 +1,7 @@
 import markovify
 import os
 import os.path
+import re
 import requests
 import time
 
@@ -8,11 +9,13 @@ from helga import settings, log
 from helga.db import db
 from helga.plugins import Command, ResponseNotReady
 
-from helga_alias import find_alias
+from helga_alias import find_alias, is_alias
 from helga_twitter import tweet
 
 from cobe.brain import Brain
 from twisted.internet import reactor, threads
+
+ADDRESSING_POSSIBLE_NICK = re.compile(r'(?:^|(?:[.!?]\s))(\w+)')
 
 DEBUG = getattr(settings, 'HELGA_DEBUG', False)
 GENERATE_TRIES = int(getattr(settings, 'MIMIC_GENERATE_TRIES', 50))
@@ -197,7 +200,11 @@ class MimicPlugin(Command):
     def preprocess(self, client, channel, nick, message):
         if NICK in message:
             response = bot_say(seed=message)
-            client.msg(channel, response)
+            potential_nick = ADDRESSING_POSSIBLE_NICK.match(response).groups()[0]
+
+            if is_alias(potential_nick):
+                response = response.replace(potential_nick, nick)
+                client.msg(channel, response)
 
             self.last_response = response
 

@@ -203,8 +203,8 @@ class MimicPlugin(Command):
 
             if is_alias(potential_nick):
                 response = response.replace(potential_nick, nick)
-                client.msg(channel, response)
 
+            client.msg(channel, response)
             self.last_response = response
 
         return channel, nick, message

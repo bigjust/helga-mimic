@@ -238,6 +238,8 @@ class MimicPlugin(Command):
 
             generate_model(key, corpus=resp.content)
 
+            return 'Done!'
+
         start = time.time()
         generated = generate_sentence(channel_or_nicks)
         duration = time.time() - start

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.8] - 2017-09-10]
+### Fixed
+- build markov file for channel
+
 ## [0.4.7] - 2017-09-08]
 ### Fixed
 - bad indent led to cobe responses to not output if not replacing matched aliases

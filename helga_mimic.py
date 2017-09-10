@@ -49,7 +49,7 @@ def generate_model(channel_or_nick, corpus=''):
 
     if is_channel_or_nick(channel_or_nick):
         train_brain(channel_or_nick)
-        return
+        db_filter['channel'] = channel_or_nick
     else:
         db_filter['nick'] = channel_or_nick
 

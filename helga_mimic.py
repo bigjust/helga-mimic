@@ -209,6 +209,9 @@ class MimicPlugin(Command):
 
         return channel, nick, message
 
+    def process_build_error(self, result):
+        logger.debug('got error while building models: {}'.format(result))
+
     def run(self, client, channel, nick, message, cmd, args):
 
         logger.debug('args: {}'.format(args))
@@ -225,7 +228,14 @@ class MimicPlugin(Command):
             raise ResponseNotReady
 
         if 'build' in channel_or_nicks:
-            threads.deferToThread(generate_models, client, channel, channel_or_nicks[1:])
+
+            deferred_build = threads.deferToThread(
+                generate_models,
+                client, channel, channel_or_nicks[1:]
+            )
+
+            deferred_build.addErrback(self.process_build_error)
+
             raise ResponseNotReady
 
         if 'load' in channel_or_nicks:

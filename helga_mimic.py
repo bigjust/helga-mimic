@@ -199,10 +199,10 @@ class MimicPlugin(Command):
     def preprocess(self, client, channel, nick, message):
         if NICK in message:
             response = bot_say(seed=message)
-            potential_nick_matches = ADDRESSING_POSSIBLE_NICK.match(response).groups()
+            potential_nick_matches = ADDRESSING_POSSIBLE_NICK.match(response)
 
             if potential_nick_matches:
-                potential_nick = potential_nick_matches[0]
+                potential_nick = potential_nick_matches.groups()[0]
 
                 if is_alias(potential_nick):
                     response = response.replace(potential_nick, nick)

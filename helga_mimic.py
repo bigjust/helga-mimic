@@ -37,7 +37,7 @@ def is_channel_or_nick(channel_or_nick):
 
 def generate_model(channel_or_nick, corpus=''):
     """
-    Generates a markov chain for channel or nick
+    Generates a markov chain for channel or nick.
     """
 
     logger.debug('generating model for {}'.format(channel_or_nick))
@@ -120,6 +120,11 @@ def generate_sentence(channel_or_nicks):
     )
 
 def train_brain(channel):
+    """
+    create a cobe brain file based on the db.
+
+    This file is used by cobe to generate responses.
+    """
 
     logger.debug('starting training')
     logger.debug('ignored: {}'.format(IGNORED))
@@ -197,6 +202,11 @@ class MimicPlugin(Command):
     last_response = ''
 
     def preprocess(self, client, channel, nick, message):
+        """
+        listen out for our nick. if mentioned, we'll respond with a
+        (hopefully) relevant statement.
+        """
+
         if NICK in message:
             response = bot_say(seed=message)
             potential_nick_matches = ADDRESSING_POSSIBLE_NICK.match(response)

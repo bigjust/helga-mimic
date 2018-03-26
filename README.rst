@@ -18,17 +18,17 @@ Usage
 We can mimic the current channel::
 
   <bigjust> !mimic
-  <helga> if not, why are we counting from dusk till dawn?
+  <helga> altho i would feel better after too much credit
 
 or a specific user::
 
   <bigjust> !mimic bigjust
-  <helga> I'm a dork, haha
+  <helga> i gotta get rally dirt working on simply interfacing with UCI
 
 or a list of users::
 
   <bigjust> !mimic bigjust justin
-  <helga> I thought W was the 25th anniversary of the GOP
+  <helga> oh, that reminds me, i need to review these one day
 
 replace brain by relearning whats in the db (aka how we update
 currently)::

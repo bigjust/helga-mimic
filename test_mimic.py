@@ -1,24 +1,26 @@
-import unittest
-
-from helga_mimic import is_channel_or_nick
+from helga_mimic import MimicPlugin, bot_say
 
 
-class ChannelOrNickTestCase(unittest.TestCase):
+class TestBotSayEndpoint(object):
 
-    def setUp(self):
+    def setup(self):
         pass
 
-    def test_channel(self):
-        """
-        is_channel_or_nick returns `True` for channels
-        """
+    def test_uninitiated_brain(self):
 
-        self.assertTrue(is_channel_or_nick('#test'))
-        self.assertTrue(is_channel_or_nick('##test-ot'))
+        resp = bot_say()
 
-    def test_nick(self):
-        """
-        is_channel_or_nick returns `False` for nicks
-        """
+        assert 'I dont know enough' in resp
 
-        self.assertFalse(is_channel_or_nick('aineko'))
+    def test_thing(self):
+        assert True
+
+class TestMimicPlugin(object):
+
+    def setup(self):
+
+        self.plugin = MimicPlugin()
+
+    def test_plugin(self):
+
+        assert True

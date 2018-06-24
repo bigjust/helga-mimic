@@ -27,139 +27,6 @@ THINK_TIME = int(getattr(settings, 'MIMIC_THINK_TIME', 2000))
 
 logger = log.getLogger(__name__)
 
-
-def is_channel_or_nick(channel_or_nick):
-    """
-    Returns `True` if channel, `False` if nick.
-    """
-
-    return channel_or_nick.startswith('#')
-
-def generate_model(channel_or_nick, corpus=''):
-    """
-    Generates a markov chain for channel or nick.
-    """
-
-    logger.debug('generating model for {}'.format(channel_or_nick))
-
-    db_filter = {
-        'nick': {'$nin': IGNORED},
-        'message': {'$regex': '^(?!\.|\,|\!)'},
-    }
-
-    if is_channel_or_nick(channel_or_nick):
-        train_brain(channel_or_nick)
-        db_filter['channel'] = channel_or_nick
-    else:
-        db_filter['nick'] = channel_or_nick
-
-    logger.debug('{} lines found'.format(db.logger.find(db_filter).count()))
-
-
-    if not corpus:
-        for doc in db.logger.find(db_filter):
-            corpus += doc['message']
-            corpus += '\n'
-
-    markov_chain = markovify.NewlineText(corpus, state_size=STATE_SIZE)
-
-    with open('markov-{}.json'.format(channel_or_nick), 'w') as f:
-        f.write(markov_chain.to_json())
-
-    logger.debug('done creating markov file.')
-
-def generate_models(client, channel, channel_or_nicks):
-    """
-    Create markov files for each nick specified, or the channel.
-    """
-
-    if not channel_or_nicks:
-        # build models for every nick, and cobe brain
-
-        logger.debug('building all nicks')
-
-        nicks_pipeline = [
-            {'$match': {
-                'channel': channel,
-            }},
-            {'$group': {'_id': '$nick'}},
-        ]
-
-        results = [nick for nick in db.logger.aggregate(nicks_pipeline)]
-        channel_or_nicks = [nick['_id'] for nick in results]
-
-        channel_or_nicks.append(channel)
-
-    for channel_or_nick in channel_or_nicks:
-        generate_model(channel_or_nick)
-
-    client.msg(channel, 'build done!')
-
-def generate_sentence(channel_or_nicks):
-    """
-    Generates a sentence from the corpus of `channel_or_nick`
-    """
-
-    logger.debug('generating sentence for {}'.format(channel_or_nicks))
-
-    models = []
-
-    for nick in channel_or_nicks:
-        _, aliases = find_alias(nick, create_new=False)
-        for alias in aliases:
-            filename = 'markov-{}.json'.format(alias)
-            if os.path.exists(filename):
-                with open(filename, 'r') as f:
-                    models.append(markovify.NewlineText.from_json(f.read()))
-
-    if not models:
-        return
-
-    return markovify.combine(models).make_sentence(
-        tries=GENERATE_TRIES
-    )
-
-def train_brain(channel):
-    """
-    create a cobe brain file based on the db.
-
-    This file is used by cobe to generate responses.
-    """
-
-    logger.debug('starting training')
-    logger.debug('ignored: {}'.format(IGNORED))
-
-    # replace the current brain
-    try:
-        os.remove('brain.ai')
-    except:
-        pass
-
-    BRAIN = Brain('brain.ai')
-
-    logger.debug('created brain.ai')
-
-    start = time.time()
-
-    BRAIN.start_batch_learning()
-
-    logger_lines = db.logger.find({
-        'channel': channel,
-        'nick': {'$nin': IGNORED},
-        'message': {'$regex': '^(?!\.|\,|\!)'},
-    })
-
-    logger.debug('log total: {}'.format(logger_lines.count()))
-
-    for line in logger_lines:
-        BRAIN.learn(line['message'])
-
-    BRAIN.stop_batch_learning()
-
-    logger.debug('learned stuff. Took {:.2f}s'.format(
-        time.time() - start
-    ))
-
 # API
 def bot_say(seed='', think_time=THINK_TIME):
     """
@@ -183,6 +50,8 @@ def bot_say(seed='', think_time=THINK_TIME):
         loop_ms=think_time,
     )
 
+
+
     balance_chars = ['"', '\'']
     remove_chars = ['[', ']', '{', '}', '(', ')']
 
@@ -196,10 +65,135 @@ def bot_say(seed='', think_time=THINK_TIME):
     return response
 
 
+
 class MimicPlugin(Command):
 
     command = 'mimic'
     last_response = ''
+
+    def generate_sentence(self, channel_or_nicks):
+        """
+        Generates a sentence from the corpus of `channel_or_nick`
+        """
+
+        logger.debug('generating sentence for {}'.format(channel_or_nicks))
+
+        models = []
+
+        for nick in channel_or_nicks:
+            _, aliases = find_alias(nick, create_new=False)
+            for alias in aliases:
+                filename = 'markov-{}.json'.format(alias)
+                if os.path.exists(filename):
+                    with open(filename, 'r') as f:
+                        models.append(markovify.NewlineText.from_json(f.read()))
+
+        if models:
+            return markovify.combine(models).make_sentence(
+                tries=GENERATE_TRIES
+            )
+
+    def train_brain(self, channel):
+        """
+        create a cobe brain file based on the db.
+
+        This file is used by cobe to generate responses.
+        """
+
+        logger.debug('starting training')
+        logger.debug('ignored: {}'.format(IGNORED))
+
+        # replace the current brain
+        try:
+            os.remove('brain.ai')
+        except:
+            pass
+
+        BRAIN = Brain('brain.ai')
+
+        logger.debug('created brain.ai')
+
+        start = time.time()
+
+        BRAIN.start_batch_learning()
+
+        logger_lines = db.logger.find({
+            'channel': channel,
+            'nick': {'$nin': IGNORED},
+            'message': {'$regex': '^(?!\.|\,|\!)'},
+        })
+
+        logger.debug('log total: {}'.format(logger_lines.count()))
+
+        for line in logger_lines:
+            BRAIN.learn(line['message'])
+
+        BRAIN.stop_batch_learning()
+
+        logger.debug('learned stuff. Took {:.2f}s'.format(
+            time.time() - start
+        ))
+
+
+    def generate_model(self, client, channel_or_nick, corpus=''):
+        """
+        Generates a markov chain for channel or nick.
+        """
+
+        logger.debug('generating model for {}'.format(channel_or_nick))
+
+        db_filter = {
+            'nick': {'$nin': IGNORED},
+            'message': {'$regex': '^(?!\.|\,|\!)'},
+        }
+
+        if client.is_public_channel(channel_or_nick):
+            self.train_brain(channel_or_nick)
+            db_filter['channel'] = channel_or_nick
+        else:
+            db_filter['nick'] = channel_or_nick
+
+        logger.debug('{} lines found'.format(db.logger.find(db_filter).count()))
+
+
+        if not corpus:
+            for doc in db.logger.find(db_filter):
+                corpus += doc['message']
+                corpus += '\n'
+
+        markov_chain = markovify.NewlineText(corpus, state_size=STATE_SIZE)
+
+        with open('markov-{}.json'.format(channel_or_nick), 'w') as f:
+            f.write(markov_chain.to_json())
+
+        logger.debug('done creating markov file.')
+
+    def generate_models(self, client, channel, channel_or_nicks):
+        """
+        Create markov files for each nick specified, or the channel.
+        """
+
+        if not channel_or_nicks:
+            # build models for every nick, and cobe brain
+            logger.debug('building all nicks')
+
+            nicks_pipeline = [
+                {'$match': {
+                    'channel': channel,
+                }},
+                {'$group': {
+                    '_id': '$nick'
+                }},
+            ]
+
+            results = [nick for nick in db.logger.aggregate(nicks_pipeline)]
+            channel_or_nicks = [nick['_id'] for nick in results]
+            channel_or_nicks.append(channel)
+
+        for channel_or_nick in channel_or_nicks:
+            self.generate_model(client, channel_or_nick)
+
+        client.msg(channel, 'build done!')
 
     def preprocess(self, client, channel, nick, message):
         """
@@ -243,7 +237,7 @@ class MimicPlugin(Command):
         if 'build' in channel_or_nicks:
 
             deferred_build = threads.deferToThread(
-                generate_models,
+                self.generate_models,
                 client, channel, channel_or_nicks[1:]
             )
 
@@ -259,12 +253,12 @@ class MimicPlugin(Command):
             key = str(args[1])
             resp = requests.get(args[2])
 
-            generate_model(key, corpus=resp.content)
+            self.generate_model(client, key, corpus=resp.content)
 
             return 'Done!'
 
         start = time.time()
-        generated = generate_sentence(channel_or_nicks)
+        generated = self.generate_sentence(channel_or_nicks)
         duration = time.time() - start
 
         if not generated:

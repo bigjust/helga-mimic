@@ -201,7 +201,9 @@ class MimicPlugin(Command):
         (hopefully) relevant statement.
         """
 
-        if NICK in message:
+        if NICK in message and not message.startswith(
+                getattr(settings, 'COMMAND_PREFIX_CHAR')
+        ):
             response = bot_say(seed=message)
             potential_nick_matches = ADDRESSING_POSSIBLE_NICK.match(response)
 

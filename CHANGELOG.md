@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.4.11] - 2018-12-09]
+### Fixed
+- don't mimic reply for commands
+
+## [0.4.10] - 2017-09-13]
+### Fixed
+- syntax issue when matching nicks
+
 ## [0.4.9] - 2017-09-10]
 ## Added
 - Exception logging for generate_models in separate thread
